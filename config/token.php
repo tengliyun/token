@@ -26,9 +26,9 @@ return [
     |
     */
 
-    'private_key' => env('TOKEN_PRIVATE_KEY'),
+    'private_key' => env('TOKEN_PRIVATE_KEY', 'token_private_key.pem'),
 
-    'public_key' => env('TOKEN_PUBLIC_KEY'),
+    'public_key' => env('TOKEN_PUBLIC_KEY', 'token_public_key.pem'),
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +42,8 @@ return [
     */
 
     'connection' => env('TOKEN_CONNECTION'),
-    'table'      => env('TOKEN_TABLE', 'auth_tokens'),
+
+    'table' => env('TOKEN_TABLE', 'auth_tokens'),
 
     /*
     |--------------------------------------------------------------------------

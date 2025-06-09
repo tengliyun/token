@@ -33,8 +33,8 @@ class KeysCommand extends Command
      */
     public function handle(): bool
     {
-        $publicKey  = Token::keyPath('token-public.key');
-        $privateKey = Token::keyPath('token-private.key');
+        $publicKey  = Token::keyPath($this->option('public_key'));
+        $privateKey = Token::keyPath($this->option('private_key'));
 
         if (file_exists($publicKey) || file_exists($privateKey)) {
             if ($this->option('force') === false) {
@@ -100,6 +100,8 @@ class KeysCommand extends Command
         return [
             ['force', 'f', InputOption::VALUE_NONE, 'Overwrite keys they already exist.'],
             ['length', null, InputOption::VALUE_REQUIRED, 'The length of the private key.', 4096],
+            ['public_key', null, InputOption::VALUE_REQUIRED, 'The path to the public key file (PEM format) used to verify tokens.', config('token.public_key')],
+            ['private_key', null, InputOption::VALUE_REQUIRED, 'The path to the private key file (PEM format) used to sign tokens.', config('token.private_key')],
         ];
     }
 }
