@@ -42,6 +42,7 @@ return [
     */
 
     'connection' => env('TOKEN_CONNECTION'),
+    'table'      => env('TOKEN_TABLE', 'auth_tokens'),
 
     /*
     |--------------------------------------------------------------------------
