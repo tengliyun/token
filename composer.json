@@ -24,7 +24,8 @@
     ],
     "require": {
         "php": "^8.0",
-        "gmtls/openssl-crypto-kit": "^3.0"
+        "gmtls/openssl-crypto-kit": "^3.0",
+        "token/jwt": "^4.4"
     },
     "autoload": {
         "psr-4": {
