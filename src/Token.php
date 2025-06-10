@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Http\Request;
+use Tengliyun\Token\Contracts\AuthToken;
+use Tengliyun\Token\Models\AuthTokens;
 
 class Token
 {
@@ -66,7 +68,7 @@ class Token
      *
      * @var string
      */
-    public static string $authTokenModel = Models\AuthToken::class;
+    public static string $authTokenModel = AuthTokens::class;
 
     /**
      * Set the storage location of the encryption keys.
@@ -233,10 +235,10 @@ class Token
         return new static;
     }
 
-    public static function useAccessTokenAuthenticationCallback(Contracts\AuthToken $authToken, bool $isValid): bool
+    public static function useAccessTokenAuthenticationCallback(AuthToken $authToken, bool $isValid): bool
     {
         if (is_callable(static::$accessTokenAuthenticationCallback)) {
-            return call_user_func(static::$accessTokenAuthenticationCallback, $authToken);
+            return call_user_func(static::$accessTokenAuthenticationCallback, $authToken, $isValid);
         }
 
         return $isValid;
@@ -338,9 +340,9 @@ class Token
     /**
      * Get a auth token model instance.
      *
-     * @return Contracts\AuthToken
+     * @return AuthToken
      */
-    public static function token(): Contracts\AuthToken
+    public static function token(): AuthToken
     {
         return new static::$authTokenModel;
     }

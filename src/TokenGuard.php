@@ -6,9 +6,8 @@ use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
 use Tengliyun\Token\Contracts\AuthToken;
-use Tengliyun\Token\Contracts\HasApiTokens;
+use Tengliyun\Token\Contracts\HasApiToken;
 use Tengliyun\Token\Events\TokenAuthenticated;
-use Tengliyun\Token\HasApiTokens as HasApiTokensTrait;
 
 class TokenGuard
 {
@@ -54,9 +53,9 @@ class TokenGuard
      * @param Request           $request
      * @param UserProvider|null $provider
      *
-     * @return HasApiTokens|null
+     * @return HasApiToken|null
      */
-    public function __invoke(Request $request, UserProvider $provider = null): ?HasApiTokens
+    public function __invoke(Request $request, UserProvider $provider = null): ?HasApiToken
     {
         if (!$token = $this->getTokenFromRequest($request)) {
             return null;
@@ -116,12 +115,12 @@ class TokenGuard
     /**
      * Determine if the provided access token is valid.
      *
-     * @param AuthToken    $authTokenModel
-     * @param HasApiTokens $tokenable
+     * @param AuthToken   $authTokenModel
+     * @param HasApiToken $tokenable
      *
      * @return bool
      */
-    protected function isValidAccessToken(AuthToken $authTokenModel, HasApiTokens $tokenable): bool
+    protected function isValidAccessToken(AuthToken $authTokenModel, HasApiToken $tokenable): bool
     {
         return Token::useAccessTokenAuthenticationCallback($authTokenModel, $this->hasValidProvider($tokenable));
     }
@@ -129,11 +128,11 @@ class TokenGuard
     /**
      * Determine if the tokenable model matches the provider's model type.
      *
-     * @param HasApiTokens|null $tokenable
+     * @param HasApiToken|null $tokenable
      *
      * @return bool
      */
-    protected function hasValidProvider(?HasApiTokens $tokenable = null): bool
+    protected function hasValidProvider(?HasApiToken $tokenable = null): bool
     {
         if (is_null($this->provider)) {
             return true;
@@ -151,15 +150,14 @@ class TokenGuard
     /**
      * Determine if the tokenable model supports API tokens.
      *
-     * @param HasApiTokens|null $tokenable
+     * @param HasApiToken|null $tokenable
      *
      * @return bool
      */
-    protected function supportsTokens(HasApiTokens $tokenable = null): bool
+    protected function supportsTokens(HasApiToken $tokenable = null): bool
     {
         return $tokenable && in_array(
-                HasApiTokensTrait::class,
-                class_uses_recursive(get_class($tokenable))
+                HasApiTokens::class, class_uses_recursive(get_class($tokenable))
             );
     }
 }

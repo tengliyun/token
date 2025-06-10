@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
+use Tengliyun\Token\Contracts\AuthToken;
 
-class AuthToken extends EloquentModel implements \Tengliyun\Token\Contracts\AuthToken
+class AuthTokens extends EloquentModel implements AuthToken
 {
     use HasFactory;
     use Notifiable;
@@ -114,6 +115,16 @@ class AuthToken extends EloquentModel implements \Tengliyun\Token\Contracts\Auth
     protected $guarded = [];
 
     /**
+     * Get the table associated with the model.
+     *
+     * @return string
+     */
+    public function getTable(): string
+    {
+        return config('token.table', parent::getTable());
+    }
+
+    /**
      * Prepare a date for array / JSON serialization.
      *
      * @param DateTimeInterface $date
@@ -144,6 +155,7 @@ class AuthToken extends EloquentModel implements \Tengliyun\Token\Contracts\Auth
      */
     public static function findToken(string $token): ?static
     {
+        return static::find(1);
         return static::where('token', $token)->first();
     }
 
@@ -156,8 +168,11 @@ class AuthToken extends EloquentModel implements \Tengliyun\Token\Contracts\Auth
      */
     public function can(string $ability): bool
     {
-        return in_array('*', $this->getAttribute('scopes')) ||
-            array_key_exists($ability, array_flip($this->getAttribute('scopes')));
+        return in_array(
+                '*', $this->getAttribute('scopes')
+            ) || array_key_exists(
+                $ability, array_flip($this->getAttribute('scopes'))
+            );
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Tengliyun\Token\Contracts;
 
-interface HasApiTokens
+interface HasApiToken
 {
 
 }
