@@ -1,0 +1,174 @@
+<?php
+
+namespace Tengliyun\Token\Models;
+
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Notifications\Notifiable;
+
+class AuthToken extends EloquentModel implements \Tengliyun\Token\Contracts\AuthToken
+{
+    use HasFactory;
+    use Notifiable;
+
+    /**
+     * The name of the "created at" column.
+     *
+     * @var string|null
+     */
+    const CREATED_AT = 'created_at';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string|null
+     */
+    const UPDATED_AT = 'updated_at';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string|null
+     */
+    const DELETED_AT = 'deleted_at';
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'int';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'scopes' => 'json',
+    ];
+
+    /**
+     * The storage format of the model's date columns.
+     *
+     * @var string
+     */
+    protected $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array
+     */
+    protected $hidden = [];
+
+    /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = [];
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var string[]
+     */
+    protected $fillable = [];
+
+    /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var string[]|bool
+     */
+    protected $guarded = [];
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param DateTimeInterface $date
+     *
+     * @return string
+     */
+    protected function serializeDate(DateTimeInterface $date): string
+    {
+        return $date->format($this->dateFormat);
+    }
+
+    /**
+     * Get the tokenable model that the access token belongs to.
+     *
+     * @return MorphTo
+     */
+    public function tokenable(): MorphTo
+    {
+        return $this->morphTo('tokenable');
+    }
+
+    /**
+     * Find the token instance matching the given token.
+     *
+     * @param string $token
+     *
+     * @return static|null
+     */
+    public static function findToken(string $token): ?static
+    {
+        return static::where('token', $token)->first();
+    }
+
+    /**
+     * Determine if the token has a given ability.
+     *
+     * @param string $ability
+     *
+     * @return bool
+     */
+    public function can(string $ability): bool
+    {
+        return in_array('*', $this->getAttribute('scopes')) ||
+            array_key_exists($ability, array_flip($this->getAttribute('scopes')));
+    }
+
+    /**
+     * Determine if the token is missing a given ability.
+     *
+     * @param string $ability
+     *
+     * @return bool
+     */
+    public function cant(string $ability): bool
+    {
+        return !$this->can($ability);
+    }
+}
