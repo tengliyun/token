@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
-    public function __construct()
-    {
-        $this->connection = config('token.connection');
-    }
-
     /**
      * Run the migrations.
      *
