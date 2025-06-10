@@ -6,8 +6,6 @@ use Carbon\Carbon;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Http\Request;
-use Tengliyun\Token\Models\AccessToken;
-use Tengliyun\Token\Models\RefreshToken;
 
 class Token
 {
@@ -43,6 +41,13 @@ class Token
     protected static $refreshTokenRetrievalCallback = null;
 
     /**
+     * A callback that can add to the validation of the access token.
+     *
+     * @var callable|null
+     */
+    public static $accessTokenAuthenticationCallback;
+
+    /**
      * The callback used to encrypt JWT tokens.
      *
      * @var callable|null
@@ -57,18 +62,11 @@ class Token
     protected static $tokenDecryptionCallback;
 
     /**
-     * The token model class name.
+     * The auth token model class name.
      *
      * @var string
      */
-    public static string $tokenModel = AccessToken::class;
-
-    /**
-     * The refresh token model class name.
-     *
-     * @var string
-     */
-    public static string $refreshTokenModel = RefreshToken::class;
+    public static string $authTokenModel = Models\AuthToken::class;
 
     /**
      * Set the storage location of the encryption keys.
@@ -216,6 +214,34 @@ class Token
         return null;
     }
 
+    public static function accessTokenAuthenticationCallback(): ?callable
+    {
+        return static::$accessTokenAuthenticationCallback;
+    }
+
+    /**
+     * A callback that can add to the validation of the access token.
+     *
+     * @param callable $callback
+     *
+     * @return static
+     */
+    public function accessTokenAuthenticationCallbackUsing(callable $callback): static
+    {
+        static::$accessTokenAuthenticationCallback = $callback;
+
+        return new static;
+    }
+
+    public static function useAccessTokenAuthenticationCallback(Contracts\AuthToken $authToken, bool $isValid): bool
+    {
+        if (is_callable(static::$accessTokenAuthenticationCallback)) {
+            return call_user_func(static::$accessTokenAuthenticationCallback, $authToken);
+        }
+
+        return $isValid;
+    }
+
     /**
      * Specify a callback that will be used to encrypt JWT tokens.
      *
@@ -272,11 +298,11 @@ class Token
      * to convert the encrypted token back to its original JWT form. If no callback is defined,
      * the original token string is returned.
      *
-     * @param string $jwt The encrypted JWT string to decrypt.
+     * @param string|null $jwt The encrypted JWT string to decrypt.
      *
-     * @return string The decrypted raw JWT string or the original string if no callback is defined.
+     * @return string|null The decrypted raw JWT string or the original string if no callback is defined.
      */
-    public static function useDecryptTokens(string $jwt): string
+    public static function useDecryptTokens(string $jwt = null): ?string
     {
         if (is_callable(static::$tokenDecryptionCallback)) {
             return call_user_func(static::$tokenDecryptionCallback, $jwt);
@@ -286,70 +312,36 @@ class Token
     }
 
     /**
-     * Set the token model class name.
+     * Set the auth token model class name.
      *
-     * @param string $tokenModel
+     * @param string $authTokenModel
      *
      * @return static
      */
-    public static function tokenModelUsing(string $tokenModel): static
+    public static function tokenModelUsing(string $authTokenModel): static
     {
-        static::$tokenModel = $tokenModel;
+        static::$authTokenModel = $authTokenModel;
 
         return new static;
     }
 
     /**
-     * Get the token model class name.
+     * Get the auth token model class name.
      *
      * @return string
      */
     public static function tokenModel(): string
     {
-        return static::$tokenModel;
+        return static::$authTokenModel;
     }
 
     /**
-     * Get a new personal access client model instance.
+     * Get a auth token model instance.
      *
-     * @return AccessToken
+     * @return Contracts\AuthToken
      */
-    public static function token(): AccessToken
+    public static function token(): Contracts\AuthToken
     {
-        return new static::$tokenModel;
-    }
-
-    /**
-     * Set the refresh token model class name.
-     *
-     * @param string $refreshTokenModel
-     *
-     * @return static
-     */
-    public static function refreshTokenModelUsing(string $refreshTokenModel): static
-    {
-        static::$refreshTokenModel = $refreshTokenModel;
-
-        return new static;
-    }
-
-    /**
-     * Get the refresh token model class name.
-     *
-     * @return string
-     */
-    public static function refreshTokenModel(): string
-    {
-        return static::$refreshTokenModel;
-    }
-
-    /**
-     * Get a new refresh token model instance.
-     *
-     * @return RefreshToken
-     */
-    public static function refreshToken(): RefreshToken
-    {
-        return new static::$refreshTokenModel;
+        return new static::$authTokenModel;
     }
 }
