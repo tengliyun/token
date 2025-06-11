@@ -3,11 +3,18 @@
 namespace Tengliyun\Token\Models;
 
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 use Tengliyun\Token\Contracts\AuthToken;
+use Tengliyun\Token\Contracts\JWT;
+use Token\JWT\Contracts\RegisteredClaims;
+use Token\JWT\Token;
+use Token\JWT\Validation\Constraint\RelatedTo;
+use Token\JWT\Validation\Constraint\SignedWith;
+use Token\JWT\Validation\Constraint\ValidAt;
 
 class AuthTokens extends EloquentModel implements AuthToken
 {
@@ -146,13 +153,36 @@ class AuthTokens extends EloquentModel implements AuthToken
         return $date->format($this->dateFormat);
     }
 
+    protected function name(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => strtolower($value),
+            set: fn($value, $attributes) => strtoupper($value),
+        );
+    }
+
+    protected function package(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => strtolower($value),
+            set: fn($value, $attributes) => strtoupper($value),
+        );
+    }
+
+    protected function tokenableType(): Attribute
+    {
+        return new Attribute(
+            get: fn($value, $attributes) => str_replace('\\', '.', $value),
+        );
+    }
+
     /**
      * Get the tokenable model that the access token belongs to.
      *
      */
     public function tokenable(): MorphTo
     {
-        return $this->morphTo('tokenable');
+        return $this->morphTo();
     }
 
     /**
@@ -162,9 +192,33 @@ class AuthTokens extends EloquentModel implements AuthToken
      *
      * @return static|null
      */
-    public static function findToken(string $token): ?static
+    public function findToken(string $token): ?static
     {
-        return static::query()->where('token', $token)->first();
+        if (is_null($token = $this->parseToken($token))) {
+            return null;
+        }
+
+        return static::query()->find($token->claims()->get(RegisteredClaims::ID));
+    }
+
+    protected function parseToken(string $token): ?Token
+    {
+        $factory = app(JWT::class);
+
+        try {
+            $token = $factory->parser()->parse($token);
+
+            $factory->setValidationConstraints(
+                new SignedWith($factory->signer(), $factory->verificationKey()),
+                new RelatedTo('access-token'),
+                new ValidAt(now()->toDateTimeImmutable()),
+            );
+            $factory->validator()->assert($token, ...$factory->validationConstraints());
+
+            return $token;
+        } catch (\Throwable $throwable) {
+            return null;
+        }
     }
 
     /**
