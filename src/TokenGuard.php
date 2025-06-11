@@ -61,15 +61,15 @@ class TokenGuard
             return null;
         }
 
-        $authTokenModel = with(Token::token(), function ($authTokenModel) use ($token) {
-            return $authTokenModel::findToken($token);
+        $authTokenModel = with(Token::token(), function (AuthToken $authTokenModel) use ($token) {
+            return $authTokenModel->findToken($token);
         });
 
         if (is_null($authTokenModel)) {
             return null;
         }
 
-        if (is_null($tokenable = $authTokenModel->tokenable)) {
+        if (is_null($tokenable = $authTokenModel?->tokenable)) {
             return null;
         }
 
