@@ -125,6 +125,16 @@ class AuthTokens extends EloquentModel implements AuthToken
     }
 
     /**
+     * Get the current connection name for the model.
+     *
+     * @return string|null
+     */
+    public function getConnectionName(): ?string
+    {
+        return config('token.connection', null);
+    }
+
+    /**
      * Prepare a date for array / JSON serialization.
      *
      * @param DateTimeInterface $date
@@ -139,7 +149,6 @@ class AuthTokens extends EloquentModel implements AuthToken
     /**
      * Get the tokenable model that the access token belongs to.
      *
-     * @return MorphTo
      */
     public function tokenable(): MorphTo
     {
@@ -155,8 +164,7 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public static function findToken(string $token): ?static
     {
-        return static::find(1);
-        return static::where('token', $token)->first();
+        return static::query()->where('token', $token)->first();
     }
 
     /**
