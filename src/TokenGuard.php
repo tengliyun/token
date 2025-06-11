@@ -73,7 +73,7 @@ class TokenGuard
             return null;
         }
 
-        if (!$this->isValidAccessToken($authTokenModel, $tokenable) || !$this->supportsTokens($authTokenModel->tokenable)) {
+        if (!$this->isValidAccessToken($authTokenModel, $tokenable) || !$this->supportsTokens($tokenable)) {
             return null;
         }
 
