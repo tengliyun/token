@@ -190,9 +190,13 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public function findToken(string $token): ?static
     {
-        $personalAccessToken = app(PersonalAccessToken::class);
+        $personalAccessToken = PersonalAccessToken::getInstance();
 
-        $token = $personalAccessToken->parseAccessToken($token);
+        try {
+            $token = $personalAccessToken->parseAccessToken($token);
+        } catch (\Throwable $e) {
+            return null;
+        }
 
         return static::query()->find($token->claims()->get(RegisteredClaims::ID));
     }

@@ -26,10 +26,6 @@ class TokenServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/token.php', 'token');
 
-        $this->app->when(PersonalAccessToken::class)
-            ->needs(JWTFactory::class)
-            ->give(fn() => app('token.jwt'));
-
         $this->registerJonsWebToken();
         $this->registerGuard();
 

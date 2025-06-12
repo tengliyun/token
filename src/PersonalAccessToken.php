@@ -9,7 +9,6 @@ use Tengliyun\Token\Exceptions\InvalidRefreshTokenException;
 use Tengliyun\Token\Exceptions\TokenException;
 use Throwable;
 use Token\JWT\Contracts\Token as JWToken;
-use Token\JWT\Exceptions\ConstraintViolationException;
 use Token\JWT\Exceptions\RequiredConstraintsViolated;
 use Token\JWT\Factory;
 use Token\JWT\Validation\Constraint\RelatedTo;
@@ -18,12 +17,22 @@ use Token\JWT\Validation\Constraint\ValidAt;
 
 class PersonalAccessToken implements Arrayable
 {
-    protected ?JWToken $accessToken  = null;
-    protected ?JWToken $refreshToken = null;
+    protected static ?PersonalAccessToken $instance     = null;
+    protected ?JWToken                    $accessToken  = null;
+    protected ?JWToken                    $refreshToken = null;
 
-    public function __construct(protected Factory $factory)
+    protected function __construct(protected Factory $factory)
     {
         //
+    }
+
+    public static function getInstance(): PersonalAccessToken
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static(app('token.jwt'));
+        }
+
+        return static::$instance;
     }
 
     public function accessToken(AuthToken $model): static
@@ -103,7 +112,7 @@ class PersonalAccessToken implements Arrayable
             $this->factory->validator()->assert($token, ...$this->factory->validationConstraints());
 
             return $token;
-        } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
+        } catch (RequiredConstraintsViolated $exception) {
             throw new InvalidAccessTokenException($exception->getMessage(), $exception->getCode(), $exception);
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
@@ -130,7 +139,7 @@ class PersonalAccessToken implements Arrayable
             $this->factory->validator()->assert($token, ...$this->factory->validationConstraints());
 
             return $token;
-        } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
+        } catch (RequiredConstraintsViolated $exception) {
             throw new InvalidRefreshTokenException($exception->getMessage(), $exception->getCode(), $exception);
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);

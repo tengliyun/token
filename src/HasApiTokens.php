@@ -30,7 +30,7 @@ trait HasApiTokens
      */
     public function createToken(string $name, string $package, array $scopes = ['*']): PersonalAccessToken
     {
-        $personalAccessToken = app(PersonalAccessToken::class);
+        $personalAccessToken = PersonalAccessToken::getInstance();
 
         if (!$this->exists) {
             return $personalAccessToken;
@@ -50,8 +50,8 @@ trait HasApiTokens
 
         $personalAccessToken = $personalAccessToken->accessToken($tokenable)->refreshToken($tokenable);
 
-        return tap($personalAccessToken, function ($factory) use ($tokenable) {
-            $tokenable->update($factory->toArray());
+        return tap($personalAccessToken, function (PersonalAccessToken $personalAccessToken) use ($tokenable) {
+            $tokenable->update($personalAccessToken->toArray());
         });
     }
 
