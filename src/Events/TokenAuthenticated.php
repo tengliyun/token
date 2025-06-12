@@ -3,23 +3,15 @@
 namespace Tengliyun\Token\Events;
 
 use Tengliyun\Token\Contracts\AuthToken;
+use Tengliyun\Token\Contracts\HasApiToken;
 
 class TokenAuthenticated
 {
-    /**
-     * The token that was authenticated.
-     *
-     * @var AuthToken
-     */
-    public AuthToken $token;
-
-    /**
-     * Create a new event instance.
-     *
-     * @param AuthToken $token
-     */
-    public function __construct(AuthToken $token)
+    public function __construct(
+        public HasApiToken $tokenable,
+        public AuthToken   $token,
+    )
     {
-        $this->token = $token;
+        //
     }
 }
