@@ -192,9 +192,7 @@ class AuthTokens extends EloquentModel implements AuthToken
     {
         $personalAccessToken = app(PersonalAccessToken::class);
 
-        if (is_null($token = $personalAccessToken->parseAccessToken($token))) {
-            return null;
-        }
+        $token = $personalAccessToken->parseAccessToken($token);
 
         return static::query()->find($token->claims()->get(RegisteredClaims::ID));
     }

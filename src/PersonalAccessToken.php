@@ -86,11 +86,11 @@ class PersonalAccessToken implements Arrayable
     /**
      * @param string $token
      *
-     * @return JWToken|null
+     * @return JWToken
      * @throws InvalidAccessTokenException
      * @throws TokenException
      */
-    public function parseAccessToken(string $token): ?JWToken
+    public function parseAccessToken(string $token): JWToken
     {
         try {
             $token = $this->factory->parser()->parse($token);
@@ -108,18 +108,16 @@ class PersonalAccessToken implements Arrayable
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
-
-        return null;
     }
 
     /**
      * @param string $token
      *
-     * @return JWToken|null
+     * @return JWToken
      * @throws InvalidRefreshTokenException
      * @throws TokenException
      */
-    public function parseRefreshToken(string $token): ?JWToken
+    public function parseRefreshToken(string $token): JWToken
     {
         try {
             $token = $this->factory->parser()->parse($token);
@@ -137,7 +135,5 @@ class PersonalAccessToken implements Arrayable
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
-
-        return null;
     }
 }
