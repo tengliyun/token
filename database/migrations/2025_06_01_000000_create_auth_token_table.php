@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
+    public function __construct()
+    {
+        $this->connection = config('token.connection');
+    }
+
     /**
      * Run the migrations.
      *
@@ -15,17 +20,18 @@ return new class extends Migration {
     {
         Schema::create(config('token.table', 'auth_tokens'), function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name')->comment('名称');
-            $table->string('package')->comment('设备标识');
+            $table->string('name')->comment('Token Name');
+            $table->string('package')->comment('Package-bound token types');
             $table->morphs('tokenable', 'idx_tokenable');
-            $table->string('access_token')->unique('uniq_access_token')->comment('凭证');
-            $table->string('refresh_token')->unique('uniq_refresh_token')->comment('刷新凭证');
-            $table->timestamp('access_token_expire_at')->nullable()->comment('凭证超时时间');
-            $table->timestamp('refresh_token_expire_at')->nullable()->comment('刷新凭证超时时间');
-            $table->text('scopes')->nullable()->comment('授权作用域');
-            $table->timestamp('last_used_at')->nullable()->comment('最近访问时间');
-            $table->timestamp('created_at')->nullable()->comment('创建时间');
-            $table->timestamp('updated_at')->nullable()->comment('最新更新时间');
+            $table->text('access_token')->nullable()->comment('Access Token');
+            $table->text('refresh_token')->nullable()->comment('Refresh Token');
+            $table->text('scopes')->comment('Token Scopes');
+            $table->timestamp('access_token_expire_at')->comment('Token expiration time');
+            $table->timestamp('refresh_token_expire_at')->comment('Refresh token expiration time');
+            $table->timestamp('last_used_at')->nullable()->comment('Last used time');
+            $table->timestamp('created_at')->comment('Created Time');
+            $table->timestamp('updated_at')->comment('Updated Time');
+            $table->timestamp('deleted_at')->nullable()->comment('Deleted Time');
         });
     }
 

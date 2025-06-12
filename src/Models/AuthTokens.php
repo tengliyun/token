@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Tengliyun\Token\Contracts\AuthToken;
 use Tengliyun\Token\JWToken;
@@ -16,6 +17,7 @@ class AuthTokens extends EloquentModel implements AuthToken
 {
     use HasFactory;
     use Notifiable;
+    use SoftDeletes;
 
     /**
      * The name of the "created at" column.
