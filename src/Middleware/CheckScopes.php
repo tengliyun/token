@@ -23,7 +23,7 @@ class CheckScopes
      */
     public function handle(Request $request, Closure $next, ...$scopes): Response
     {
-        if (!$request->user() || !$request->user()->currentAccessToken()) {
+        if (!$request->user()?->token()) {
             throw new InvalidAccessTokenException();
         }
 
