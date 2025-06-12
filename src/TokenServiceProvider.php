@@ -7,6 +7,8 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Tengliyun\Token\Middleware\CheckForAnyScope;
+use Tengliyun\Token\Middleware\CheckScopes;
 use Token\JWT\Contracts\Signer;
 use Token\JWT\Factory as JWTFactory;
 use Token\JWT\Key;
@@ -30,6 +32,9 @@ class TokenServiceProvider extends ServiceProvider
 
         $this->registerJonsWebToken();
         $this->registerGuard();
+
+        $this->addMiddlewareAlias('scopes', CheckScopes::class);
+        $this->addMiddlewareAlias('scope', CheckForAnyScope::class);
     }
 
     /**
@@ -100,6 +105,25 @@ class TokenServiceProvider extends ServiceProvider
             $this->app['request'],
             $auth->createUserProvider($config['provider'] ?? null)
         );
+    }
+
+    /**
+     * Register the middleware.
+     *
+     * @param string $name
+     * @param string $class
+     *
+     * @return mixed
+     */
+    protected function addMiddlewareAlias(string $name, string $class): mixed
+    {
+        $router = $this->app['router'];
+
+        if (method_exists($router, 'aliasMiddleware')) {
+            return $router->aliasMiddleware($name, $class);
+        }
+
+        return $router->middleware($name, $class);
     }
 
     /**
