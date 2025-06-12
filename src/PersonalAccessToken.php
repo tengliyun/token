@@ -4,8 +4,8 @@ namespace Tengliyun\Token;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Tengliyun\Token\Contracts\AuthToken;
-use Tengliyun\Token\Exceptions\AccessTokenException;
-use Tengliyun\Token\Exceptions\RefreshTokenException;
+use Tengliyun\Token\Exceptions\InvalidAccessTokenException;
+use Tengliyun\Token\Exceptions\InvalidRefreshTokenException;
 use Tengliyun\Token\Exceptions\TokenException;
 use Throwable;
 use Token\JWT\Contracts\Token as JWToken;
@@ -87,7 +87,7 @@ class PersonalAccessToken implements Arrayable
      * @param string $token
      *
      * @return JWToken|null
-     * @throws AccessTokenException
+     * @throws InvalidAccessTokenException
      * @throws TokenException
      */
     public function parseAccessToken(string $token): ?JWToken
@@ -104,7 +104,7 @@ class PersonalAccessToken implements Arrayable
 
             return $token;
         } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
-            throw new AccessTokenException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new InvalidAccessTokenException($exception->getMessage(), $exception->getCode(), $exception);
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -116,7 +116,7 @@ class PersonalAccessToken implements Arrayable
      * @param string $token
      *
      * @return JWToken|null
-     * @throws RefreshTokenException
+     * @throws InvalidRefreshTokenException
      * @throws TokenException
      */
     public function parseRefreshToken(string $token): ?JWToken
@@ -133,7 +133,7 @@ class PersonalAccessToken implements Arrayable
 
             return $token;
         } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
-            throw new RefreshTokenException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new InvalidRefreshTokenException($exception->getMessage(), $exception->getCode(), $exception);
         } catch (Throwable $throwable) {
             throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
