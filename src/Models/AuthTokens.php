@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 use Tengliyun\Token\Contracts\AuthToken;
-use Tengliyun\Token\PersonalAccessToken;
+use Tengliyun\Token\JWToken;
 use Token\JWT\Contracts\RegisteredClaims;
 
 class AuthTokens extends EloquentModel implements AuthToken
@@ -190,7 +190,7 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public function findToken(string $token): ?static
     {
-        $personalAccessToken = PersonalAccessToken::getInstance();
+        $personalAccessToken = JWToken::getInstance();
 
         try {
             $token = $personalAccessToken->parseAccessToken($token);

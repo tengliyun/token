@@ -26,11 +26,11 @@ trait HasApiTokens
      * @param string $package
      * @param array  $scopes
      *
-     * @return PersonalAccessToken
+     * @return JWToken
      */
-    public function createToken(string $name, string $package, array $scopes = ['*']): PersonalAccessToken
+    public function createToken(string $name, string $package, array $scopes = ['*']): JWToken
     {
-        $personalAccessToken = PersonalAccessToken::getInstance();
+        $personalAccessToken = JWToken::getInstance();
 
         if (!$this->exists) {
             return $personalAccessToken;
@@ -50,7 +50,7 @@ trait HasApiTokens
 
         $personalAccessToken = $personalAccessToken->accessToken($tokenable)->refreshToken($tokenable);
 
-        return tap($personalAccessToken, function (PersonalAccessToken $personalAccessToken) use ($tokenable) {
+        return tap($personalAccessToken, function (JWToken $personalAccessToken) use ($tokenable) {
             $tokenable->update($personalAccessToken->toArray());
         });
     }

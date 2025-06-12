@@ -3,30 +3,31 @@
 namespace Tengliyun\Token;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use Tengliyun\Token\Contracts\AuthToken;
 use Tengliyun\Token\Exceptions\InvalidAccessTokenException;
 use Tengliyun\Token\Exceptions\InvalidRefreshTokenException;
 use Tengliyun\Token\Exceptions\TokenException;
 use Throwable;
-use Token\JWT\Contracts\Token as JWToken;
+use Token\JWT\Contracts\Token as JsonWebToken;
 use Token\JWT\Exceptions\RequiredConstraintsViolated;
 use Token\JWT\Factory;
 use Token\JWT\Validation\Constraint\RelatedTo;
 use Token\JWT\Validation\Constraint\SignedWith;
 use Token\JWT\Validation\Constraint\ValidAt;
 
-class PersonalAccessToken implements Arrayable
+class JWToken implements Arrayable, Jsonable
 {
-    protected static ?PersonalAccessToken $instance     = null;
-    protected ?JWToken                    $accessToken  = null;
-    protected ?JWToken                    $refreshToken = null;
+    protected static ?JWToken $instance     = null;
+    protected ?JsonWebToken   $accessToken  = null;
+    protected ?JsonWebToken   $refreshToken = null;
 
     protected function __construct(protected Factory $factory)
     {
         //
     }
 
-    public static function getInstance(): PersonalAccessToken
+    public static function getInstance(): JWToken
     {
         if (is_null(static::$instance)) {
             static::$instance = new static(app('token.jwt'));
@@ -81,7 +82,8 @@ class PersonalAccessToken implements Arrayable
 
     /**
      * @inheritdoc
-     * @return array
+     *
+     * @return array<string, JsonWebToken>
      */
     #[\Override]
     public function toArray(): array
@@ -93,13 +95,24 @@ class PersonalAccessToken implements Arrayable
     }
 
     /**
+     * @inheritdoc
+     *
+     * @return string
+     */
+    #[\Override]
+    public function toJson($options = JSON_UNESCAPED_UNICODE): string
+    {
+        return json_encode($this->toArray(), $options);
+    }
+
+    /**
      * @param string $token
      *
-     * @return JWToken
+     * @return JsonWebToken
      * @throws InvalidAccessTokenException
      * @throws TokenException
      */
-    public function parseAccessToken(string $token): JWToken
+    public function parseAccessToken(string $token): JsonWebToken
     {
         try {
             $token = $this->factory->parser()->parse($token);
@@ -122,11 +135,11 @@ class PersonalAccessToken implements Arrayable
     /**
      * @param string $token
      *
-     * @return JWToken
+     * @return JsonWebToken
      * @throws InvalidRefreshTokenException
      * @throws TokenException
      */
-    public function parseRefreshToken(string $token): JWToken
+    public function parseRefreshToken(string $token): JsonWebToken
     {
         try {
             $token = $this->factory->parser()->parse($token);
