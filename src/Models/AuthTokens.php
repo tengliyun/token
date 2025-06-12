@@ -9,12 +9,8 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 use Tengliyun\Token\Contracts\AuthToken;
-use Tengliyun\Token\Contracts\JWT;
+use Tengliyun\Token\PersonalAccessToken;
 use Token\JWT\Contracts\RegisteredClaims;
-use Token\JWT\Token;
-use Token\JWT\Validation\Constraint\RelatedTo;
-use Token\JWT\Validation\Constraint\SignedWith;
-use Token\JWT\Validation\Constraint\ValidAt;
 
 class AuthTokens extends EloquentModel implements AuthToken
 {
@@ -194,31 +190,13 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public function findToken(string $token): ?static
     {
-        if (is_null($token = $this->parseToken($token))) {
+        $personalAccessToken = app(PersonalAccessToken::class);
+
+        if (is_null($token = $personalAccessToken->parseAccessToken($token))) {
             return null;
         }
 
         return static::query()->find($token->claims()->get(RegisteredClaims::ID));
-    }
-
-    protected function parseToken(string $token): ?Token
-    {
-        $factory = app(JWT::class);
-
-        try {
-            $token = $factory->parser()->parse($token);
-
-            $factory->setValidationConstraints(
-                new SignedWith($factory->signer(), $factory->verificationKey()),
-                new RelatedTo('access-token'),
-                new ValidAt(now()->toDateTimeImmutable()),
-            );
-            $factory->validator()->assert($token, ...$factory->validationConstraints());
-
-            return $token;
-        } catch (\Throwable $throwable) {
-            return null;
-        }
     }
 
     /**

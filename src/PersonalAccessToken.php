@@ -4,8 +4,17 @@ namespace Tengliyun\Token;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Tengliyun\Token\Contracts\AuthToken;
+use Tengliyun\Token\Exceptions\AccessTokenException;
+use Tengliyun\Token\Exceptions\RefreshTokenException;
+use Tengliyun\Token\Exceptions\TokenException;
+use Throwable;
 use Token\JWT\Contracts\Token as JWToken;
+use Token\JWT\Exceptions\ConstraintViolationException;
+use Token\JWT\Exceptions\RequiredConstraintsViolated;
 use Token\JWT\Factory;
+use Token\JWT\Validation\Constraint\RelatedTo;
+use Token\JWT\Validation\Constraint\SignedWith;
+use Token\JWT\Validation\Constraint\ValidAt;
 
 class PersonalAccessToken implements Arrayable
 {
@@ -72,5 +81,63 @@ class PersonalAccessToken implements Arrayable
             'access_token'  => $this->accessToken ? Token::useEncryptTokens($this->accessToken->toString()) : null,
             'refresh_token' => $this->refreshToken ? Token::useEncryptTokens($this->refreshToken->toString()) : null,
         ]);
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return JWToken|null
+     * @throws AccessTokenException
+     * @throws TokenException
+     */
+    public function parseAccessToken(string $token): ?JWToken
+    {
+        try {
+            $token = $this->factory->parser()->parse($token);
+
+            $this->factory->setValidationConstraints(
+                new SignedWith($this->factory->signer(), $this->factory->verificationKey()),
+                new RelatedTo('access-token'),
+                new ValidAt(now()->toDateTimeImmutable()),
+            );
+            $this->factory->validator()->assert($token, ...$this->factory->validationConstraints());
+
+            return $token;
+        } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
+            throw new AccessTokenException($exception->getMessage(), $exception->getCode(), $exception);
+        } catch (Throwable $throwable) {
+            throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return JWToken|null
+     * @throws RefreshTokenException
+     * @throws TokenException
+     */
+    public function parseRefreshToken(string $token): ?JWToken
+    {
+        try {
+            $token = $this->factory->parser()->parse($token);
+
+            $this->factory->setValidationConstraints(
+                new SignedWith($this->factory->signer(), $this->factory->verificationKey()),
+                new RelatedTo('refresh-token'),
+                new ValidAt(now()->toDateTimeImmutable()),
+            );
+            $this->factory->validator()->assert($token, ...$this->factory->validationConstraints());
+
+            return $token;
+        } catch (ConstraintViolationException|RequiredConstraintsViolated $exception) {
+            throw new RefreshTokenException($exception->getMessage(), $exception->getCode(), $exception);
+        } catch (Throwable $throwable) {
+            throw new TokenException($throwable->getMessage(), $throwable->getCode(), $throwable);
+        }
+
+        return null;
     }
 }
