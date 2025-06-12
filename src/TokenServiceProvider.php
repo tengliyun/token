@@ -7,7 +7,6 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use Tengliyun\Token\Contracts\JWT;
 use Token\JWT\Contracts\Signer;
 use Token\JWT\Factory as JWTFactory;
 use Token\JWT\Key;
@@ -27,7 +26,7 @@ class TokenServiceProvider extends ServiceProvider
 
         $this->app->when(PersonalAccessToken::class)
             ->needs(JWTFactory::class)
-            ->give(fn() => app(JWT::class));
+            ->give(fn() => app('token.jwt'));
 
         $this->registerJonsWebToken();
         $this->registerGuard();
@@ -40,7 +39,7 @@ class TokenServiceProvider extends ServiceProvider
      */
     protected function registerJonsWebToken(): void
     {
-        $this->app->singleton(JWT::class, function (): JWTFactory {
+        $this->app->singleton('token.jwt', function (): JWTFactory {
             $signer = config('token.signer');
             $signer = $this->app->make($signer);
 
