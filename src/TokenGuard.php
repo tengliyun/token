@@ -69,7 +69,7 @@ class TokenGuard
             return null;
         }
 
-        if (is_null($tokenable = $authTokenModel?->tokenable)) {
+        if (is_null($tokenable = $authTokenModel->getRelationValue('tokenable'))) {
             return null;
         }
 
@@ -77,9 +77,9 @@ class TokenGuard
             return null;
         }
 
-        $tokenable = $authTokenModel->tokenable->withAccessToken($authTokenModel);
+        $tokenable = $tokenable->withAuthToken($authTokenModel);
 
-        event(new TokenAuthenticated($authTokenModel));
+        event(new TokenAuthenticated($tokenable, $authTokenModel));
 
         $fill = [
             'last_used_at' => now()->toDateTimeString(),
