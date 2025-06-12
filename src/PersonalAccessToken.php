@@ -35,44 +35,44 @@ class PersonalAccessToken implements Arrayable
         return static::$instance;
     }
 
-    public function accessToken(AuthToken $model): static
+    public function accessToken(AuthToken $authToken): static
     {
         $this->accessToken = $this->factory->builder()
             // Configures the issuer (iss claim)
-            ->issuedBy($model->getAttribute('tokenable_type'))
+            ->issuedBy($authToken->getAttribute('tokenable_type'))
             // Configures the id (jti claim)
-            ->identifiedBy($model->getKey())
+            ->identifiedBy($authToken->getKey())
             // Configures the subject
             ->relatedTo('access-token')
             // Configures the audience (aud claim)
-            ->permittedFor(...$model->getAttribute('scopes'))
+            ->permittedFor(...$authToken->getAttribute('scopes'))
             // Configures the time that the token was issue (iat claim)
             ->issuedAt(now()->toDateTimeImmutable())
             // Configures the time that the token can be used (nbf claim)
             ->canOnlyBeUsedAfter(now()->toDateTimeImmutable())
             // Configures the expiration time of the token (exp claim)
-            ->expiresAt($model->getAttribute('access_token_expire_at'))
+            ->expiresAt($authToken->getAttribute('access_token_expire_at'))
             // Builds a new token
             ->getToken($this->factory->signer(), $this->factory->signingKey());
 
         return $this;
     }
 
-    public function refreshToken(AuthToken $model): static
+    public function refreshToken(AuthToken $authToken): static
     {
         $this->refreshToken = $this->factory->builder()
             // Configures the issuer (iss claim)
-            ->issuedBy($model->getAttribute('tokenable_type'))
+            ->issuedBy($authToken->getAttribute('tokenable_type'))
             // Configures the id (jti claim)
-            ->identifiedBy($model->getKey())
+            ->identifiedBy($authToken->getKey())
             // Configures the subject
             ->relatedTo('refresh-token')
             // Configures the time that the token was issue (iat claim)
             ->issuedAt(now()->toDateTimeImmutable())
             // Configures the time that the token can be used (nbf claim)
-            ->canOnlyBeUsedAfter($model->getAttribute('access_token_expire_at'))
+            ->canOnlyBeUsedAfter($authToken->getAttribute('access_token_expire_at'))
             // Configures the expiration time of the token (exp claim)
-            ->expiresAt($model->getAttribute('refresh_token_expire_at'))
+            ->expiresAt($authToken->getAttribute('refresh_token_expire_at'))
             // Builds a new token
             ->getToken($this->factory->signer(), $this->factory->signingKey());
 
@@ -87,8 +87,8 @@ class PersonalAccessToken implements Arrayable
     public function toArray(): array
     {
         return array_filter([
-            'access_token'  => $this->accessToken ? Token::useEncryptTokens($this->accessToken->toString()) : null,
-            'refresh_token' => $this->refreshToken ? Token::useEncryptTokens($this->refreshToken->toString()) : null,
+            'access_token'  => Token::useEncryptTokens($this->accessToken?->toString()),
+            'refresh_token' => Token::useEncryptTokens($this->refreshToken?->toString()),
         ]);
     }
 

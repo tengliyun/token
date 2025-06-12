@@ -279,11 +279,11 @@ class Token
      * If an encryption callback has been registered via encryptTokensUsing(), it will be applied
      * to the provided JWT string. Otherwise, the original JWT string will be returned unmodified.
      *
-     * @param string $jwt The raw JWT string to encrypt.
+     * @param string|null $jwt The raw JWT string to encrypt.
      *
      * @return string The encrypted JWT string or the original string if no callback is defined.
      */
-    public static function useEncryptTokens(string $jwt): string
+    public static function useEncryptTokens(string $jwt = null): string
     {
         if (is_callable(static::$tokenEncryptionCallback)) {
             return call_user_func(static::$tokenEncryptionCallback, $jwt);
