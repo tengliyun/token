@@ -38,6 +38,14 @@ composer require tengliyun/token
 
 ## Usage
 
+```shell
+php artisan vendor:publish --tag=token-migrations
+```
+
+```shell
+php artisan migrate --path=database/migrations/2025_06_01_000000_create_auth_token_table.php
+```
+
 <!-- CONTRIBUTING -->
 
 ## Contributing
