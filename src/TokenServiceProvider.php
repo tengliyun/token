@@ -97,7 +97,7 @@ class TokenServiceProvider extends ServiceProvider
     protected function createGuard(AuthFactory $auth, string $name, array $config): RequestGuard
     {
         return new RequestGuard(
-            new TokenGuard($auth, $name, $config['provider']),
+            new TokenGuard($auth, $name, $config['provider'] ?? null),
             $this->app['request'],
             $auth->createUserProvider($config['provider'] ?? null)
         );
