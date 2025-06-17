@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Tengliyun\Token\Auth\Access\Authorizable;
 use Tengliyun\Token\Contracts\AuthToken;
 use Tengliyun\Token\JWToken;
 use Token\JWT\Contracts\RegisteredClaims;
@@ -18,6 +19,7 @@ class AuthTokens extends EloquentModel implements AuthToken
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
+    use Authorizable;
 
     /**
      * The name of the "created at" column.
@@ -126,7 +128,7 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public function getTable(): string
     {
-        return config('token.table', parent::getTable());
+        return config('token.table', 'auth_tokens');
     }
 
     /**
@@ -136,7 +138,7 @@ class AuthTokens extends EloquentModel implements AuthToken
      */
     public function getConnectionName(): ?string
     {
-        return config('token.connection', null);
+        return config('token.connection');
     }
 
     /**
@@ -201,33 +203,5 @@ class AuthTokens extends EloquentModel implements AuthToken
         }
 
         return static::query()->find($token->claims()->get(RegisteredClaims::ID));
-    }
-
-    /**
-     * Determine if the token has a given ability.
-     *
-     * @param string $ability
-     *
-     * @return bool
-     */
-    public function can(string $ability): bool
-    {
-        return in_array(
-                '*', $this->getAttribute('scopes')
-            ) || array_key_exists(
-                $ability, array_flip($this->getAttribute('scopes'))
-            );
-    }
-
-    /**
-     * Determine if the token is missing a given ability.
-     *
-     * @param string $ability
-     *
-     * @return bool
-     */
-    public function cant(string $ability): bool
-    {
-        return !$this->can($ability);
     }
 }
