@@ -6,19 +6,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Token Guard
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify which authentication guard Token will use when
-    | authenticating users. This value should correspond with one of your
-    | guards that is already present in your "auth" configuration file.
-    |
-    */
-
-    'guard' => 'web',
-
-    /*
-    |--------------------------------------------------------------------------
     | Token Signer Class
     |--------------------------------------------------------------------------
     |
@@ -26,7 +13,8 @@ return [
     |
     | Supported: ES256::class, ES384::class, ES512::class,
     |            RS256::class, RS384::class, RS512::class,
-    |            HS256::class, HS384::class, HS512::class
+    |            HS256::class, HS384::class, HS512::class,
+    |            None::class
     |
     */
 
@@ -75,19 +63,6 @@ return [
     'connection' => env('TOKEN_CONNECTION'),
 
     'table' => env('TOKEN_TABLE', 'auth_tokens'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Client UUIDs
-    |--------------------------------------------------------------------------
-    |
-    | By default, Token uses auto-incrementing primary keys when assigning
-    | IDs to clients. However, if Token is installed using the provided
-    | --uuids switch, this will be set to "true" and UUIDs will be used.
-    |
-    */
-
-    'client_uuids' => false,
 
     /*
     |--------------------------------------------------------------------------
