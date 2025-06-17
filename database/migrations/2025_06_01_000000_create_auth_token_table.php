@@ -6,9 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
-    public function __construct()
+    /**
+     * Get the migration connection name.
+     *
+     * @return string|null
+     */
+    public function getConnection(): ?string
     {
-        $this->connection = config('token.connection');
+        return config('token.connection');
     }
 
     /**
