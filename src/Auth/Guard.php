@@ -1,6 +1,6 @@
 <?php
 
-namespace Tengliyun\Token;
+namespace Tengliyun\Token\Auth;
 
 use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -8,22 +8,24 @@ use Illuminate\Http\Request;
 use Tengliyun\Token\Contracts\AuthToken;
 use Tengliyun\Token\Contracts\HasApiToken;
 use Tengliyun\Token\Events\TokenAuthenticated;
+use Tengliyun\Token\HasApiTokens;
+use Tengliyun\Token\Token;
 
-class TokenGuard
+class Guard
 {
-    /**
-     * The authentication factory implementation.
-     *
-     * @var Factory
-     */
-    protected Factory $auth;
-
     /**
      * The guard name.
      *
      * @var string
      */
     protected string $name;
+
+    /**
+     * The authentication factory implementation.
+     *
+     * @var Factory
+     */
+    protected Factory $auth;
 
     /**
      * The provider name.
@@ -35,15 +37,14 @@ class TokenGuard
     /**
      * Create a new guard instance.
      *
-     * @param Factory     $auth
      * @param string      $name
+     * @param Factory     $auth
      * @param string|null $provider
-     *
      */
-    public function __construct(Factory $auth, string $name, string $provider = null)
+    public function __construct(string $name, Factory $auth, string $provider = null)
     {
-        $this->auth     = $auth;
         $this->name     = $name;
+        $this->auth     = $auth;
         $this->provider = $provider;
     }
 
@@ -138,13 +139,14 @@ class TokenGuard
             return true;
         }
 
-        if (config("auth.providers.{$this->provider}.driver") === 'database') {
-            return true;
-        }
-
-        $model = config("auth.providers.{$this->provider}.model");
-
-        return $tokenable instanceof $model;
+        $driver = config("auth.providers.{$this->provider}.driver");
+        $table  = config("auth.providers.{$this->provider}.table");
+        $model  = config("auth.providers.{$this->provider}.model");
+        return match (strtolower($driver)) {
+            'database' => $tokenable->getTable() === $table,
+            'eloquent' => $tokenable instanceof $model,
+            default => false,
+        };
     }
 
     /**
@@ -156,8 +158,6 @@ class TokenGuard
      */
     protected function supportsTokens(HasApiToken $tokenable = null): bool
     {
-        return $tokenable && in_array(
-                HasApiTokens::class, class_uses_recursive(get_class($tokenable))
-            );
+        return $tokenable && in_array(HasApiTokens::class, class_uses_recursive(get_class($tokenable)));
     }
 }
