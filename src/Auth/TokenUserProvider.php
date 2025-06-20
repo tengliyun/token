@@ -11,11 +11,9 @@ class TokenUserProvider implements UserProvider
      * Create a new passport user provider.
      *
      * @param UserProvider $provider
-     * @param string|null  $providerName
      */
     public function __construct(
         protected UserProvider $provider,
-        protected ?string      $providerName,
     )
     {
         //
@@ -69,15 +67,5 @@ class TokenUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
         return $this->provider->validateCredentials($user, $credentials);
-    }
-
-    /**
-     * Get the name of the user provider.
-     *
-     * @return string|null
-     */
-    public function getProviderName(): ?string
-    {
-        return $this->providerName;
     }
 }
